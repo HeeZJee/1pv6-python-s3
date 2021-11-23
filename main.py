@@ -1,5 +1,6 @@
 import boto3
-import sys, logging
+import sys
+import logging
 
 from botocore.exceptions import ClientError
 
@@ -7,8 +8,9 @@ logger = logging.getLogger(__name__)
 
 bucket_name = sys.argv[1]
 operation_name = sys.argv[2]
-object_key = sys.argv[3]
-data = sys.argv[4]
+if len(sys.argv) > 3:
+    object_key = sys.argv[3]
+    data = sys.argv[4]
 
 s3 = boto3.resource('s3')
 bucket = s3.Bucket(bucket_name)
@@ -29,9 +31,10 @@ def list_objects(prefix=None):
             objects = list(bucket.objects.all())
         else:
             objects = list(bucket.objects.filter(Prefix=prefix))
-        logger.info("Got objects %s from bucket '%s'",[o.key for o in objects], bucket.name)
+        logger.info("Got objects %s from bucket '%s'", [
+                    o.key for o in objects], bucket.name)
         [print(o.key) for o in objects]
-        
+
     except ClientError:
         logger.exception("Couldn't get objects for bucket '%s'.", bucket.name)
         raise
@@ -73,7 +76,7 @@ def put_object(object_key, data):
     finally:
         if getattr(put_data, 'close', None):
             put_data.close()
-            
+
 
 def main():
     if operation_name == 'list_objects':
@@ -82,5 +85,6 @@ def main():
     if operation_name == 'put_object':
         put_object(object_key, data)
 
-if __name__== "__main__":
+
+if __name__ == "__main__":
     main()
